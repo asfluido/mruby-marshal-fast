@@ -1,4 +1,4 @@
-# A version of the marshalling code for [Mruby](http://mruby.org/)
+# A `C` version of the marshalling code for [Mruby](http://mruby.org/)
 
 Here is my humble contribution to Mruby, marshalling code written in `C`.
 
