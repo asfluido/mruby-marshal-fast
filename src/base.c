@@ -239,9 +239,9 @@ static mrb_value load_marshal_recurse(mrb_state *mrb,bfr_stc *b)
     uint8_t *symptr=mrb_sym2name_len(mrb,mrb_symbol(cls_name),&symlen);
     struct RClass *cls=mrb_class_get(mrb,(char *)symptr);
 
-    mrb_obj_value(mrb_obj_alloc(mrb,MRB_TT_OBJECT,cls));
+    to_ret=mrb_obj_value(mrb_obj_alloc(mrb,MRB_TT_OBJECT,cls));    
     dumped_data=load_marshal_recurse(mrb,b);
-    to_ret=mrb_funcall(mrb,mrb_obj_value(cls),"marshal_load",1,dumped_data);
+    mrb_funcall(mrb,to_ret,"marshal_load",1,dumped_data);
   }
   return to_ret;  
   default:
@@ -395,7 +395,7 @@ static void write_marshal_recurse(mrb_state *mrb,bfr_stc *b,mrb_value v,int lvl)
 
     uint8_t bfr[256];
     
-    sprintf((char *)bfr,"%.16g",mrb_float(v));
+    sprintf((char *)bfr,"%.18g",mrb_float(v));
     write_byte_seq(mrb,b,bfr,strlen((char *)bfr));
   }
   return;
