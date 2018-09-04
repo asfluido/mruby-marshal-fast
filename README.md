@@ -8,7 +8,7 @@ its prerequisites is that the `c++` compiler is not even generated.
 
 The current marshalling code is the only part of Mruby that I use that
 is written in `c++`. Furthermore, I had problems with the code in the
-path, and deeply regretted not being able to easily see what was going
+past, and deeply regretted not being able to easily see what was going
 on, due to the well-known opaqueness of many `c++` colloquialisms.
 
 Having bounced on this problem again yesterday morning, I decided to
