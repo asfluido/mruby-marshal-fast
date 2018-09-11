@@ -25,6 +25,12 @@
 
 #define MAX_RECURSE 10
 
+/*
+ * Define here the regular exception class you are using
+ */
+
+#define REGEXP_CLASS "OnigRegexp"
+
 typedef struct
 {
   uint8_t *str;
@@ -38,7 +44,6 @@ typedef struct
   void *data;
   int len,cur_p;
   mrb_value cur_v;
-  struct RClass *regexp_class;
 } bfr_stc;
 
 static mrb_value marshal_load(mrb_state *mrb,mrb_value self);
@@ -74,8 +79,7 @@ void mrb_mruby_marshal_fast_gem_final(mrb_state* mrb)
 
 static mrb_value marshal_load(mrb_state *mrb,mrb_value self)
 {
-  mrb_value s;
-  
+  mrb_value s;  
   
   mrb_get_args(mrb,"S",&s);
 
@@ -83,8 +87,6 @@ static mrb_value marshal_load(mrb_state *mrb,mrb_value self)
   uint8_t v,vers[2];
 
   bzero(&b,sizeof(bfr_stc));
-
-  b.regexp_class=mrb_class_get(mrb,"Regexp");
 
   b.len=RSTRING_LEN(s);
   b.data=malloc(b.len);
@@ -247,6 +249,15 @@ static mrb_value load_marshal_recurse(mrb_state *mrb,bfr_stc *b)
     dumped_data=load_marshal_recurse(mrb,b);
     mrb_funcall(mrb,to_ret,"marshal_load",1,dumped_data);
   }
+  return to_ret;  
+  case '/':
+  {
+    int len;    
+    uint8_t *ptr=read_byte_seq(mrb,b,&len);
+    mrb_value v1=mrb_str_new(mrb,(char *)ptr,len),
+      v2=mrb_fixnum_value(read_integer(mrb,b));
+    to_ret=mrb_funcall(mrb,mrb_obj_value(mrb_class_get(mrb,REGEXP_CLASS)),"new",2,v1,v2);
+  }  
   return to_ret;  
   default:
     mrb_raisef(mrb,E_TYPE_ERROR,"%S: Cannot manage %S!",mrb_str_new_cstr(mrb,__func__),mrb_str_new(mrb,(char *)&t,1));
@@ -443,6 +454,19 @@ static void write_marshal_recurse(mrb_state *mrb,bfr_stc *b,mrb_value v,int lvl)
   return;
   case MRB_TT_DATA:
   {
+    mrb_value v1=mrb_class_path(mrb,cls);
+
+    if(!strcmp(RSTRING_PTR(v1),REGEXP_CLASS))
+    {
+      n='/';
+      b_append(b,&n,sizeof(uint8_t));
+      mrb_value v2=mrb_funcall(mrb,v,"source",0);
+      write_byte_seq(mrb,b,(uint8_t *)RSTRING_PTR(v2),RSTRING_LEN(v2));
+      v2=mrb_funcall(mrb,v,"options",0);
+      write_integer(mrb,b,mrb_fixnum(v2));
+      return;
+    }
+    
     if(!mrb_obj_respond_to(mrb,cls,mrb_intern_lit(mrb,"_dump_data")))
       mrb_raisef(mrb,E_TYPE_ERROR,"%S: Cannot handle data of class [%S] (_dump_data not found)",mrb_str_new_cstr(mrb,__func__),
 		 mrb_class_path(mrb,cls));
@@ -490,9 +514,7 @@ static void write_marshal_recurse(mrb_state *mrb,bfr_stc *b,mrb_value v,int lvl)
   }  
   return;  
   default:
-  {
     mrb_raisef(mrb,E_TYPE_ERROR,"%S: Cannot handle class [%S] (type %S)",mrb_str_new_cstr(mrb,__func__),mrb_class_path(mrb,cls),mrb_fixnum_value(mrb_type(v)));
-  }
   }
 }
 
