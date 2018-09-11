@@ -1,7 +1,7 @@
-MRuby::Gem::Specification::new('mruby_marshal_c') do |spec|
+MRuby::Gem::Specification::new('mruby-marshal-fast') do |spec|
   spec.license='MIT'
   spec.author='Carlo E. Prelz (Unibe/TPF)'
-  spec.summary='Marhshal module for mruby, cloned from the C file in MRI'
+  spec.summary='Marhshal module for mruby in C, with speed advantages'
   
   ['-g','-O6','-funsigned-char','-fPIC','-ffast-math','-Werror','-Wall','-Wcast-align',
     '-Wno-declaration-after-statement','-Wno-unused-function','-Wno-unused-variable','-Wno-unused-but-set-variable','-Wno-discarded-qualifiers',

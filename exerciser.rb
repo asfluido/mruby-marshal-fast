@@ -40,9 +40,11 @@ end
 module BLOTTO
 end
 
+REGEXP=/^abc$/
+
 a={}
 z.times do |v|
-  a[v]=Z2::new(['z'*(1+rand(10)),rand(),rand(10000),syms[rand(syms.length)],nil],Z,BLOTTO)
+  a[v]=Z2::new(['z'*(1+rand(10)),rand(),rand(10000),syms[rand(syms.length)],REGEXP,nil],Z,BLOTTO)
 end
 
 a1=Marshal::dump(a)

@@ -38,6 +38,7 @@ typedef struct
   void *data;
   int len,cur_p;
   mrb_value cur_v;
+  struct RClass *regexp_class;
 } bfr_stc;
 
 static mrb_value marshal_load(mrb_state *mrb,mrb_value self);
@@ -52,7 +53,7 @@ static void write_integer(mrb_state *mrb,bfr_stc *b,mrb_int i);
 static void write_byte_seq(mrb_state *mrb,bfr_stc *b,uint8_t *s,int len);
 static void write_symbol(mrb_state *mrb,bfr_stc *b,uint8_t *s,int len);
 
-void  mrb_mruby_marshal_c_gem_init(mrb_state* mrb)
+void  mrb_mruby_marshal_fast_gem_init(mrb_state* mrb)
 {
   struct RClass *m=mrb_define_module(mrb,"Marshal");
 
@@ -63,7 +64,7 @@ void  mrb_mruby_marshal_c_gem_init(mrb_state* mrb)
   mrb_define_const(mrb,m,"MINOR_VERSION",mrb_fixnum_value(MINOR_V));
 }
 
-void mrb_mruby_marshal_c_gem_final(mrb_state* mrb)
+void mrb_mruby_marshal_fast_gem_final(mrb_state* mrb)
 {
 }
 
@@ -75,12 +76,15 @@ static mrb_value marshal_load(mrb_state *mrb,mrb_value self)
 {
   mrb_value s;
   
+  
   mrb_get_args(mrb,"S",&s);
 
   bfr_stc b;  
   uint8_t v,vers[2];
 
   bzero(&b,sizeof(bfr_stc));
+
+  b.regexp_class=mrb_class_get(mrb,"Regexp");
 
   b.len=RSTRING_LEN(s);
   b.data=malloc(b.len);
